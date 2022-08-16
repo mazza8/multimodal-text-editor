@@ -1,11 +1,18 @@
-<video id="hello" width="0" height="0">
+<div>
+  <h1>Multimodal Jupyter Notebook</h1>
+
+  <video id="hello" width="0" height="0">
 
 
-</video>
-<canvas class="output_canvas" width="320px" height="180px"></canvas>
-<iframe
-  src="https://jupyterlite.github.io/demo/repl/index.html?kernel=python&toolbar=1"
-  width="100%"
-  height="500px"
->
-</iframe>
+  </video>
+  <div style="display:flex; flex-direction: row;">
+    <iframe src="https://jupyterlite.github.io/demo/repl/index.html?kernel=python&toolbar=1" width="100%"
+      height="600px">
+    </iframe>
+    <div style="padding-left: 10px;">
+      <canvas class="output_canvas" width="320px" height="180px"></canvas>
+    </div>
+  </div>
+
+
+</div>

@@ -42,8 +42,8 @@ export class AppComponent implements AfterViewInit {
     if (results.multiHandLandmarks) {
       for (const landmarks of results.multiHandLandmarks) {
         drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
-          { color: '#00FF00', lineWidth: 5 });
-        drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 2 });
+          { color: '#00FF00', lineWidth: 1 });
+        drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 1 });
       }
     }
     canvasCtx.restore();
