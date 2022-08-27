@@ -5,7 +5,7 @@ import { Hands, HAND_CONNECTIONS } from '@mediapipe/hands';
 import * as _ from 'lodash';
 
 import * as ort from 'onnxruntime-web'
-
+import * as jup from "@jupyterlite/server"
 const gesture_mapping: { [name: number]: string } = {
   0: "other",
   1: "thumb up",
@@ -46,6 +46,7 @@ export class AppComponent implements AfterViewInit {
     });
     this.hands.setOptions({ minDetectionConfidence: 0.5, maxNumHands: 1, modelComplexity: 1 })
     this.gesture = ""
+    new jup.JupyterLiteServer({})
   }
 
 
