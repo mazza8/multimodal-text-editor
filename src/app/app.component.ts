@@ -5,7 +5,7 @@ import { Hands, HAND_CONNECTIONS } from '@mediapipe/hands';
 import * as FileSaver from 'file-saver';
 import * as _ from 'lodash';
 import { QuillEditorComponent } from 'ngx-quill';
-
+declare var webkitSpeechRecognition: any;
 
 import * as ort from 'onnxruntime-web'
 const gesture_mapping: { [name: number]: string } = {
@@ -30,6 +30,9 @@ export class AppComponent implements AfterViewInit {
   _gesture: string = "";
   curret_text: string = "";
   current_action_count: number = 0
+  record: any;
+  recognition: any;
+  tempWords: any;
 
   public get gesture() {
     return this._gesture;
@@ -40,7 +43,10 @@ export class AppComponent implements AfterViewInit {
   }
 
   constructor() {
-    //let model = new Model("assets/deepspeech/deepspeech-0.9.3-models.pbmm");
+    this.recognition = new webkitSpeechRecognition();
+
+    this.recognition.interimResults = true;
+    this.recognition.lang = 'en-US';
     this.hands = new Hands({
       locateFile: (file) => {
         return `assets/@mediapipe/hands/${file}`;
@@ -50,7 +56,6 @@ export class AppComponent implements AfterViewInit {
     this.gesture = ""
     localStorage.setItem("html", "<h1>Hello World!</h1>")
   }
-
 
   public async onResults(results: any) {
     const canvasElement = document.getElementsByClassName('output_canvas')[0] as HTMLCanvasElement;
@@ -88,7 +93,6 @@ export class AppComponent implements AfterViewInit {
 
 
   created(event: any) {
-    console.log(event);
     var html = localStorage.getItem('html');
     if (html != null) {
       event.root.innerHTML = html;
@@ -111,8 +115,8 @@ export class AppComponent implements AfterViewInit {
   }
 
   download() {
-    var blob = new Blob(["Hello, world!"], { type: "text/plain;charset=utf-8" });
-    FileSaver.saveAs(blob, "hello world.txt");
+    var blob = new Blob([this.curret_text], { type: "text/html;charset=utf-8" });
+    FileSaver.saveAs(blob, "hello world.html");
   }
 
   upload() {
@@ -120,6 +124,27 @@ export class AppComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    this.recognition.addEventListener('result', (e: any) => {
+      const transcript = Array.from(e.results)
+        .map((result: any) => result[0])
+        .map((result) => result.transcript)
+        .join('');
+      this.tempWords = transcript;
+    });
+
+    this.recognition.addEventListener('end', (condition: any) => {
+      this.recognition.stop();
+      this.recognition.start();
+      if (this.tempWords !== undefined) {
+        this.curret_text = this.curret_text + " " + this.tempWords
+      }
+      console.log(this.tempWords)
+      this.tempWords = undefined
+
+    });
+
+    this.recognition.start();
+
     let video = document.querySelector("#hello") as HTMLVideoElement;
     this.hands.onResults(this.onResults);
 
@@ -132,7 +157,6 @@ export class AppComponent implements AfterViewInit {
           this.current_action_count = 1
         }
         this.gesture = current_gesture
-
         if (this.current_action_count == 20) {
           this.actionToTake(this.gesture)
           this.current_action_count = 1
@@ -142,7 +166,6 @@ export class AppComponent implements AfterViewInit {
       height: 720
     });
     this.camera.start();
-
   }
 }
 
