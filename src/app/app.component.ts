@@ -17,6 +17,8 @@ const gesture_mapping: { [name: number]: string } = {
 
 let current_gesture = ""
 
+
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -28,10 +30,10 @@ export class AppComponent implements AfterViewInit {
   hands: Hands;
   title = 'multimodal-text-editor';
   _gesture: string = "";
-  curret_text: string = "";
   current_action_count: number = 0
   record: any;
   recognition: any;
+  current_text: string = "";
   tempWords: any;
 
   public get gesture() {
@@ -101,7 +103,7 @@ export class AppComponent implements AfterViewInit {
 
   contentChanged(obj: any) {
     localStorage.setItem('html', obj.html);
-    this.curret_text = obj.html
+    this.current_text = obj.html
   }
 
   actionToTake(event: string) {
@@ -115,12 +117,24 @@ export class AppComponent implements AfterViewInit {
   }
 
   download() {
-    var blob = new Blob([this.curret_text], { type: "text/html;charset=utf-8" });
+    var blob = new Blob([this.current_text], { type: "text/html;charset=utf-8" });
     FileSaver.saveAs(blob, "hello world.html");
   }
 
   upload() {
-    this.curret_text += "<b>SAY WHAT!?!</b>"
+    const inputNode: any = document.querySelector('#file');
+
+    if (typeof (FileReader) !== 'undefined') {
+      const reader = new FileReader();
+      var enc = new TextDecoder("utf-8");
+      var self = this as AppComponent;
+
+      reader.onload = (e: any) => {
+        self.current_text = enc.decode(e.target.result);
+      };
+
+      reader.readAsArrayBuffer(inputNode.files[0]);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -136,7 +150,7 @@ export class AppComponent implements AfterViewInit {
       this.recognition.stop();
       this.recognition.start();
       if (this.tempWords !== undefined) {
-        this.curret_text = this.curret_text + " " + this.tempWords
+        this.current_text = this.current_text + " " + this.tempWords
       }
       console.log(this.tempWords)
       this.tempWords = undefined
