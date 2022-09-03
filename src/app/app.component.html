@@ -2,23 +2,39 @@
     <h1>Multimodal Text Editor</h1>
     <video id="hello" width="0" height="0"></video>
     <div style="display:flex; flex-direction: row;">
-        <div>
+        <div style="width: 80%;">
             <quill-editor [(ngModel)]="current_text" (onEditorCreated)="created($event)"
                 (onContentChanged)="contentChanged($event)" style="margin-bottom: 100px; height: 1000px;">
             </quill-editor>
-            <div style="display:flex; flex-direction: row; justify-content: right; padding-top: 10px;">
-                <button mat-raised-button color="primary" (click)="download()" style="margin-right: 10px">Download
-                    <mat-icon>thumb_down</mat-icon>
-                </button>
+            <div style="display:flex; flex-direction: row; justify-content: space-between; padding-top: 10px;">
 
-                <button color="primary" type="button" mat-raised-button (click)="fileInput.click()">Upload <mat-icon>
-                        thumb_up</mat-icon></button>
-                <input hidden (change)="upload()" #fileInput type="file" id="file">
+
+                <div>
+                    <button mat-raised-button color="primary" (click)="download()" style="margin-right: 10px">Download
+                        <mat-icon>thumb_down</mat-icon>
+                    </button>
+
+                    <button #inputButton color="primary" type="button" mat-raised-button (click)="fileInput.click()"
+                        (uploadTrigger)="upload()" id="inputButton">Upload
+                        <mat-icon>thumb_up</mat-icon>
+                    </button>
+                    <input hidden (change)="upload()" #fileInput type="file" id="file">
+                </div>
             </div>
         </div>
-        <div style="padding-left: 10px;">
-            <canvas class="output_canvas" width="320px" height="180px"></canvas>
-            <p style="text-transform:uppercase" class="centered">{{gesture}}</p>
+        <div style="padding-left: 10px; width: 20%;">
+            <div style="width: 100%;">
+                <canvas class="output_canvas"></canvas>
+                <p style="text-transform:uppercase" class="centered">{{gesture}}</p>
+            </div>
+
+            <div style="position:relative;">
+                <iframe src="https://giphy.com/embed/cl7sAq7d8IrihKOaW1" width="100%" style="position:absolute"
+                    frameBorder="0" class="giphy-embed" allowFullScreen>
+                </iframe>
+            </div>
+
         </div>
+
     </div>
 </div>

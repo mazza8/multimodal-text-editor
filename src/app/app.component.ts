@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { MatButton } from '@angular/material/button';
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Hands, HAND_CONNECTIONS } from '@mediapipe/hands';
@@ -8,6 +9,8 @@ import { QuillEditorComponent } from 'ngx-quill';
 declare var webkitSpeechRecognition: any;
 
 import * as ort from 'onnxruntime-web'
+import { BehaviorSubject } from 'rxjs';
+import { EventEmitter } from 'stream';
 const gesture_mapping: { [name: number]: string } = {
   0: "other",
   1: "thumb up",
@@ -35,6 +38,7 @@ export class AppComponent implements AfterViewInit {
   recognition: any;
   current_text: string = "";
   tempWords: any;
+  @ViewChild('inputButton') inputButton: MatButton;
 
   public get gesture() {
     return this._gesture;
@@ -110,7 +114,7 @@ export class AppComponent implements AfterViewInit {
     if (event === "other") {
       return
     } else if (event === "thumb up") {
-      this.upload()
+      document.getElementById("file")?.click();
     } else if (event === "thumb down") {
       this.download()
     }
