@@ -1,7 +1,60 @@
-.centered {
-    position: fixed;
+.page-container {
+    font-family: sans-serif;
+    padding-left: 60px;
+    padding-right: 60px;
 
-    /* bring your own prefixes */
-    transform: translate(20%, -1000%);
-    color: greenyellow
+    .container {
+        display: flex;
+        flex-direction: row;
+        height: 512px;
+
+        .editor-container {
+            width: 70%;
+
+            .quill-editor {
+                margin-bottom: 100px;
+                height: 1000px;
+            }
+
+            .editor-menu {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                padding-top: 10px;
+
+                .down-button {
+                    margin-right: 10px
+                }
+            }
+        }
+
+        .side-menu {
+            padding-left: 10px;
+            width: 30%;
+
+            .video-container {
+                width: 100%;
+
+                .video-feed {
+                    width: 100%;
+                }
+
+                .sign-label {
+                    position: fixed;
+                    text-transform: uppercase;
+                    transform: translate(20%, -1000%);
+                    color: greenyellow
+                }
+            }
+
+            .visual-feed {
+                position: relative;
+                width: 100%;
+
+                .visual-content {
+                    width: 100%;
+                }
+            }
+        }
+    }
 }

@@ -38,8 +38,12 @@ export class AppComponent implements AfterViewInit {
   recognition: any;
   current_text: string = "";
   tempWords: any;
-  @ViewChild('inputButton') inputButton: MatButton;
   triggered: boolean = false;
+  audio_command: boolean = false
+  audio_input: string = ""
+  current_filename: string = "hello world.html";
+  current_extension: string = "text/html;charset=utf-8"
+  wake_word: string = "google"
 
   public get gesture() {
     return this._gesture;
@@ -61,7 +65,7 @@ export class AppComponent implements AfterViewInit {
     });
     this.hands.setOptions({ minDetectionConfidence: 0.5, maxNumHands: 1, modelComplexity: 1 })
     this.gesture = ""
-    localStorage.setItem("html", "<h1>Hello World!</h1>")
+    localStorage.setItem("html", "")
   }
 
   public async onResults(results: any) {
@@ -127,8 +131,8 @@ export class AppComponent implements AfterViewInit {
   }
 
   download() {
-    var blob = new Blob([this.current_text], { type: "text/html;charset=utf-8" });
-    FileSaver.saveAs(blob, "hello world.html");
+    var blob = new Blob([this.current_text], { type: this.current_extension });
+    FileSaver.saveAs(blob, this.current_filename);
   }
 
   upload() {
@@ -160,7 +164,22 @@ export class AppComponent implements AfterViewInit {
       this.recognition.stop();
       this.recognition.start();
       if (this.tempWords !== undefined) {
-        this.current_text = this.current_text + " " + this.tempWords
+        this.audio_input = this.audio_input + " " + this.tempWords
+      }
+      if (this.tempWords !== undefined && this.triggered) {
+        if (this.tempWords === this.wake_word) {
+          this.audio_command = true
+          setTimeout(() => {
+            this.audio_command = false
+          }, 2000)
+        }
+        if (this.audio_command) {
+          if (this.tempWords == "download") {
+            this.download()
+          }
+        } else {
+          this.current_text = this.current_text + " " + this.tempWords
+        }
       }
       console.log(this.tempWords)
       this.tempWords = undefined

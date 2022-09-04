@@ -1,66 +1,52 @@
-<div style="font-family: sans-serif; padding-left: 60px; padding-right: 60px;">
+<div class="page-container">
     <h1>Multimodal Text Editor</h1>
-    <video id="hello" width="0" height="0"></video>
-    <div style="display:flex; flex-direction: row;height: 512px;">
-        <div style="width: 70%;">
-            <quill-editor [(ngModel)]="current_text" (onEditorCreated)="created($event)"
-                (onContentChanged)="contentChanged($event)" style="margin-bottom: 100px; height: 1000px;">
+    <div class="container">
+        <div class="editor-container">
+            <quill-editor class="quill-editor" [(ngModel)]="current_text" (onEditorCreated)="created($event)"
+                (onContentChanged)="contentChanged($event)">
             </quill-editor>
-            <div style="display:flex; flex-direction: row; justify-content: space-between; padding-top: 10px;">
-
-
+            <div class="editor-menu">
                 <div>
-                    <button mat-raised-button color="primary" (click)="download()" style="margin-right: 10px">Download
+                    <button mat-raised-button class="down-button" color="primary" (click)="download()">Download
                         <mat-icon>thumb_down</mat-icon>
                     </button>
-
-                    <button #inputButton color="primary" type="button" mat-raised-button (click)="fileInput.click()"
-                        id="inputButton">Upload
+                    <button color="primary" type="button" mat-raised-button (click)="fileInput.click()">Upload
                     </button>
                     <input hidden (change)="upload()" #fileInput type="file" id="file">
                 </div>
                 <div>
-                    <h2>HOW TO AUDIO:</h2>
+                    <h2>HOW TO VOCAL</h2>
                     <p>
-                        <mat-icon>thumb_up</mat-icon> : Start audio and video input
-
-                    </p>
-
-                    <p>
-                        <mat-icon>thumb_down</mat-icon> : Download editor content
-
-
+                        {{wake_word | uppercase }} : Wake word for vocal command
                     </p>
                 </div>
 
                 <div>
-                    <h2>HOW TO VIDEO:</h2>
+                    <h2>HOW TO VISUAL</h2>
                     <p>
                         <mat-icon>thumb_up</mat-icon> : Start audio and video input
-
                     </p>
-
                     <p>
                         <mat-icon>thumb_down</mat-icon> : Download editor content
-
-
                     </p>
                 </div>
             </div>
         </div>
-        <div style="padding-left: 10px; width: 30%;">
-            <div style="width: 100%;">
-                <canvas style="width: 100%;" class="output_canvas"></canvas>
-                <p style="text-transform:uppercase" class="centered">{{gesture}}</p>
+        <div class="side-menu">
+            <div class="video-container">
+                <video id="hello" width="0" height="0"></video>
+                <canvas class="output_canvas video-feed"></canvas>
+                <p class="sign-label">{{gesture}}</p>
             </div>
-
-            <div style="position:relative; width: 100%;">
-
-                <img style="width: 100%;" [src]="triggered ? 'assets/ezgif-4-860c960ac5.gif' : 'assets/image.jpg'"
+            <div class="visual-feed">
+                <img class="visual-content"
+                    [src]="triggered ? ( audio_command ? 'assets/ezgif-3-neg.gif' : 'assets/ezgif-4-860c960ac5.gif' ): 'assets/image.jpg'"
                     alt="">
             </div>
-
+            <div>
+                <h2>Audio Input</h2>
+                <p>{{audio_input}}</p>
+            </div>
         </div>
-
     </div>
 </div>
