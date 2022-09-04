@@ -39,6 +39,7 @@ export class AppComponent implements AfterViewInit {
   current_text: string = "";
   tempWords: any;
   @ViewChild('inputButton') inputButton: MatButton;
+  triggered: boolean = false;
 
   public get gesture() {
     return this._gesture;
@@ -111,12 +112,17 @@ export class AppComponent implements AfterViewInit {
   }
 
   actionToTake(event: string) {
-    if (event === "other") {
+    if (event === "thumb up") {
+      this.triggered = true
       return
-    } else if (event === "thumb up") {
-      document.getElementById("file")?.click();
-    } else if (event === "thumb down") {
-      this.download()
+    }
+
+    if (this.triggered) {
+      if (event === "other") {
+        return
+      } else if (event === "thumb down") {
+        this.download()
+      }
     }
   }
 
