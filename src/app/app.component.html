@@ -2,39 +2,61 @@
     <h1>Multimodal Text Editor</h1>
     <div class="container">
         <div class="editor-container">
-            <quill-editor class="quill-editor" [(ngModel)]="current_text" (onEditorCreated)="created($event)"
-                (onContentChanged)="contentChanged($event)">
+            <quill-editor class="quill-editor" [(ngModel)]="currentText" (onEditorCreated)="loadCachedEditor($event)"
+                (onContentChanged)="editorContentChanged($event)">
             </quill-editor>
             <div class="editor-menu">
-                <div>
-                    <button mat-raised-button class="down-button" color="primary" (click)="download()">Download
-                        <mat-icon>thumb_down</mat-icon>
-                    </button>
-                    <button color="primary" type="button" mat-raised-button (click)="fileInput.click()">Upload
-                    </button>
-                    <input hidden (change)="upload()" #fileInput type="file" id="file">
+                <div style="width: 30%;">
+                    <div>
+                        <button mat-raised-button class="down-button" color="primary" (click)="downloadFile()">Download
+                            <mat-icon>thumb_down</mat-icon>
+                        </button>
+                        <button color="primary" type="button" mat-raised-button (click)="fileInput.click()">Upload
+                        </button>
+                        <input hidden (change)="uploadFile()" #fileInput type="file" id="file">
+
+                    </div>
+                    <div>
+                        <input (change)="changeFilename($event)" #filenameInput type="text" id="filenameInput">
+                    </div>
                 </div>
-                <div>
+                <div style="width: 40%">
                     <h2>HOW TO VOCAL</h2>
                     <p>
-                        {{wake_word | uppercase }} : Wake word for vocal command
+                        {{wakeWord | uppercase }} : Wake word for vocal command. Only after visually
+                        started.
+                    </p>
+                    <p>
+                        {{"File" | uppercase }} : After saying file dictate new filename.
+                    </p>
+                    <p>
+                        {{"New Line" | uppercase }} : Add new line.
                     </p>
                 </div>
 
-                <div>
+                <div style="width: 30%">
                     <h2>HOW TO VISUAL</h2>
                     <p>
-                        <mat-icon>thumb_up</mat-icon> : Start audio and video input
+                        <mat-icon>thumb_up</mat-icon> Start audio and video input
                     </p>
                     <p>
-                        <mat-icon>thumb_down</mat-icon> : Download editor content
+                        <mat-icon>thumb_down</mat-icon> Download editor content
+                    </p>
+                    <p>
+                        <mat-icon svgIcon="stop_hand"></mat-icon> Stop audio and video input
+                    </p>
+                    <p>
+                        <mat-icon svgIcon="pointing_hand"></mat-icon> Add new line
+                    </p>
+                    <p>
+                        <mat-icon svgIcon="closed_fist"></mat-icon> Convert current line to header.
                     </p>
                 </div>
             </div>
         </div>
         <div class="side-menu">
             <div class="video-container">
-                <video id="hello" width="0" height="0"></video>
+                <video id="videoFeed" width="0" height="0"></video>
                 <canvas class="output_canvas video-feed"></canvas>
                 <p class="sign-label">{{gesture}}</p>
             </div>
@@ -45,7 +67,7 @@
             </div>
             <div>
                 <h2>Audio Input</h2>
-                <p>{{audio_input}}</p>
+                <p>{{audioInput}}</p>
             </div>
         </div>
     </div>

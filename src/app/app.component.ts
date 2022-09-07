@@ -1,5 +1,4 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import { MatButton } from '@angular/material/button';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Hands, HAND_CONNECTIONS } from '@mediapipe/hands';
@@ -7,20 +6,21 @@ import * as FileSaver from 'file-saver';
 import * as _ from 'lodash';
 import { QuillEditorComponent } from 'ngx-quill';
 declare var webkitSpeechRecognition: any;
+import { MatIconRegistry } from "@angular/material/icon";
 
 import * as ort from 'onnxruntime-web'
-import { BehaviorSubject } from 'rxjs';
-import { EventEmitter } from 'stream';
+import { DomSanitizer } from '@angular/platform-browser';
 const gesture_mapping: { [name: number]: string } = {
   0: "other",
   1: "thumb up",
-  2: "thumb down"
+  2: "thumb down",
+  3: "closed fist",
+  4: "stop sign",
+  5: "pointing hand"
 }
 
 
 let current_gesture = ""
-
-
 
 @Component({
   selector: 'app-root',
@@ -36,14 +36,14 @@ export class AppComponent implements AfterViewInit {
   current_action_count: number = 0
   record: any;
   recognition: any;
-  current_text: string = "";
-  tempWords: any;
+  currentText: string = "";
+  temporarySpeechResult: any;
   triggered: boolean = false;
   audio_command: boolean = false
-  audio_input: string = ""
-  current_filename: string = "hello world.html";
-  current_extension: string = "text/html;charset=utf-8"
-  wake_word: string = "google"
+  audioInput: string = ""
+  current_filename: string = "hello world";
+  current_extension: string = "text/html"
+  wakeWord: string = "google"
 
   public get gesture() {
     return this._gesture;
@@ -53,11 +53,35 @@ export class AppComponent implements AfterViewInit {
     this._gesture = gesture;
   }
 
-  constructor() {
-    this.recognition = new webkitSpeechRecognition();
+  constructor(private matIconRegistry: MatIconRegistry,
+    private domSanitizer: DomSanitizer
+  ) {
+    this.registerIcons()
+    this.setUpSpeechRecognition()
+    this.setUpHandsCapture()
+  }
 
+  private registerIcons() {
+    this.matIconRegistry.addSvgIcon(
+      `closed_fist`,
+      this.domSanitizer.bypassSecurityTrustResourceUrl(`../assets/icons/closed-fist-hand-gesture-svgrepo-com.svg`)
+    ); this.matIconRegistry.addSvgIcon(
+      `pointing_hand`,
+      this.domSanitizer.bypassSecurityTrustResourceUrl(`../assets/icons/hand-gesture-outline-pointing-to-the-left-svgrepo-com.svg`)
+    ); this.matIconRegistry.addSvgIcon(
+      `stop_hand`,
+      this.domSanitizer.bypassSecurityTrustResourceUrl(`../assets/icons/stop-hand-gesture-svgrepo-com.svg`)
+    );
+
+  }
+
+  private setUpSpeechRecognition() {
+    this.recognition = new webkitSpeechRecognition();
     this.recognition.interimResults = true;
     this.recognition.lang = 'en-US';
+  }
+
+  private setUpHandsCapture() {
     this.hands = new Hands({
       locateFile: (file) => {
         return `assets/@mediapipe/hands/${file}`;
@@ -65,10 +89,85 @@ export class AppComponent implements AfterViewInit {
     });
     this.hands.setOptions({ minDetectionConfidence: 0.5, maxNumHands: 1, modelComplexity: 1 })
     this.gesture = ""
-    localStorage.setItem("html", "")
   }
 
-  public async onResults(results: any) {
+  ngAfterViewInit(): void {
+    this.setUpVoiceControls()
+    this.setUpCameraFeed()
+    this.setFilename(this.current_filename)
+  }
+
+  setFilename(filename: string): void {
+    const filenameInput: HTMLInputElement = document.querySelector('#filenameInput') as HTMLInputElement;
+    filenameInput.value = filename
+  }
+
+  changeFilename(event: any) {
+    this.current_filename = event.target.value
+  }
+
+  private setUpCameraFeed(): void {
+    let video = document.querySelector("#videoFeed") as HTMLVideoElement;
+    this.hands.onResults(this.onResultsHands);
+
+    this.camera = new Camera(video, {
+      onFrame: async () => {
+        await this.hands.send({ image: video });
+        if (current_gesture !== "" && this.gesture === current_gesture) {
+          this.current_action_count += 1
+        } else {
+          this.current_action_count = 1
+        }
+        this.gesture = current_gesture
+        if (this.current_action_count == 20) {
+          this.handsControls(this.gesture)
+          this.current_action_count = 1
+        }
+      },
+      width: 1280,
+      height: 720
+    });
+    this.camera.start();
+  }
+
+  private setUpVoiceControls() {
+    // Store temporary s2t result.
+    this.recognition.addEventListener('result', (e: any) => {
+      const transcript = Array.from(e.results)
+        .map((result: any) => result[0])
+        .map((result) => result.transcript)
+        .join('');
+      this.temporarySpeechResult = transcript;
+    });
+
+    this.recognition.addEventListener('end', (condition: any) => {
+      this.recognition.stop();
+      this.recognition.start();
+      if (this.temporarySpeechResult !== undefined) {
+        this.audioInput = this.audioInput + " " + this.temporarySpeechResult
+      }
+      if (this.temporarySpeechResult !== undefined && this.triggered) {
+        if (this.temporarySpeechResult === this.wakeWord) {
+          this.audio_command = true
+          setTimeout(() => {
+            this.audio_command = false
+          }, 2000)
+        }
+        if (this.audio_command) {
+          if (this.temporarySpeechResult == "download") {
+            this.downloadFile()
+          }
+        } else {
+          this.currentText = this.currentText + " " + this.temporarySpeechResult
+        }
+      }
+      this.temporarySpeechResult = undefined
+    });
+
+    this.recognition.start();
+  }
+
+  public async onResultsHands(results: any) {
     const canvasElement = document.getElementsByClassName('output_canvas')[0] as HTMLCanvasElement;
     const canvasCtx = canvasElement.getContext('2d') as CanvasRenderingContext2D;
     canvasCtx.save();
@@ -103,112 +202,46 @@ export class AppComponent implements AfterViewInit {
   }
 
 
-  created(event: any) {
+  loadCachedEditor(event: any) {
     var html = localStorage.getItem('html');
     if (html != null) {
-      event.root.innerHTML = html;
+      this.currentText = html
+    } else {
+      localStorage.setItem("html", "")
     }
   }
 
-  contentChanged(obj: any) {
+  editorContentChanged(obj: any) {
     localStorage.setItem('html', obj.html);
-    this.current_text = obj.html
+    this.currentText = obj.html
   }
 
-  actionToTake(event: string) {
+  private handsControls(event: string): void {
     if (event === "thumb up") {
       this.triggered = true
-      return
-    }
-
-    if (this.triggered) {
-      if (event === "other") {
-        return
-      } else if (event === "thumb down") {
-        this.download()
-      }
+    } else if (this.triggered && event === "thumb down") {
+      this.downloadFile()
     }
   }
 
-  download() {
-    var blob = new Blob([this.current_text], { type: this.current_extension });
-    FileSaver.saveAs(blob, this.current_filename);
+  downloadFile() {
+    var blob = new Blob([this.currentText], { type: this.current_extension });
+    FileSaver.saveAs(blob, this.current_filename + "." + this.current_extension.split("/")[1]);
   }
 
-  upload() {
+  uploadFile() {
     const inputNode: any = document.querySelector('#file');
 
     if (typeof (FileReader) !== 'undefined') {
       const reader = new FileReader();
       var enc = new TextDecoder("utf-8");
       var self = this as AppComponent;
-
+      this.current_filename = inputNode.files[0].name.split(".", 1)
+      this.setFilename(this.current_filename)
       reader.onload = (e: any) => {
-        self.current_text = enc.decode(e.target.result);
+        self.currentText = enc.decode(e.target.result);
       };
-
       reader.readAsArrayBuffer(inputNode.files[0]);
     }
   }
-
-  ngAfterViewInit(): void {
-    this.recognition.addEventListener('result', (e: any) => {
-      const transcript = Array.from(e.results)
-        .map((result: any) => result[0])
-        .map((result) => result.transcript)
-        .join('');
-      this.tempWords = transcript;
-    });
-
-    this.recognition.addEventListener('end', (condition: any) => {
-      this.recognition.stop();
-      this.recognition.start();
-      if (this.tempWords !== undefined) {
-        this.audio_input = this.audio_input + " " + this.tempWords
-      }
-      if (this.tempWords !== undefined && this.triggered) {
-        if (this.tempWords === this.wake_word) {
-          this.audio_command = true
-          setTimeout(() => {
-            this.audio_command = false
-          }, 2000)
-        }
-        if (this.audio_command) {
-          if (this.tempWords == "download") {
-            this.download()
-          }
-        } else {
-          this.current_text = this.current_text + " " + this.tempWords
-        }
-      }
-      console.log(this.tempWords)
-      this.tempWords = undefined
-
-    });
-
-    this.recognition.start();
-
-    let video = document.querySelector("#hello") as HTMLVideoElement;
-    this.hands.onResults(this.onResults);
-
-    this.camera = new Camera(video, {
-      onFrame: async () => {
-        await this.hands.send({ image: video });
-        if (current_gesture !== "" && this.gesture === current_gesture) {
-          this.current_action_count += 1
-        } else {
-          this.current_action_count = 1
-        }
-        this.gesture = current_gesture
-        if (this.current_action_count == 20) {
-          this.actionToTake(this.gesture)
-          this.current_action_count = 1
-        }
-      },
-      width: 1280,
-      height: 720
-    });
-    this.camera.start();
-  }
 }
-
