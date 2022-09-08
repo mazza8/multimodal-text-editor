@@ -14,9 +14,9 @@ const gesture_mapping: { [name: number]: string } = {
   0: "other",
   1: "thumb up",
   2: "thumb down",
-  3: "closed fist",
-  4: "stop sign",
-  5: "pointing hand"
+  4: "closed fist",
+  3: "stop sign",
+  5: "pointing finger"
 }
 
 
@@ -194,7 +194,7 @@ export class AppComponent implements AfterViewInit {
       let temp = Array(results.multiHandLandmarks[0].map((item: any) => { return [item.x, item.y, item.z] }))
       temp = [].concat.apply([], temp[0]);
       let tensorA = new ort.Tensor('float32', temp);
-      tensorA = tensorA.reshape([1, 63])
+      tensorA = tensorA.reshape([63])
       const feeds = { input: tensorA };
 
       const session = await ort.InferenceSession.create('./assets/super_resolution.onnx');
@@ -203,7 +203,6 @@ export class AppComponent implements AfterViewInit {
 
       const maxValue = Math.max(...dataC)
       const pred = _.findIndex(dataC, (x) => x == maxValue)
-
       for (const landmarks of results.multiHandLandmarks) {
         drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
           { color: '#00FF00', lineWidth: 1 });
@@ -227,13 +226,18 @@ export class AppComponent implements AfterViewInit {
   }
 
   editorContentChanged(obj: any) {
+    console.log(obj.html)
     localStorage.setItem('html', obj.html);
-    this.currentText = obj.html
   }
 
   private handsControls(event: string): void {
     if (event === "thumb up") {
       this.triggered = true
+    } else if (this.triggered && event === "stop sign") {
+      this.triggered = false
+    } else if (this.triggered && event === "pointing finger") {
+      this.currentText = this.currentText + "<p><br></p>"
+      this.editor?.quillEditor.setSelection(this.editor.quillEditor.getLength(), 0)
     } else if (this.triggered && event === "thumb down") {
       this.downloadFile()
     }
