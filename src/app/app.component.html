@@ -7,7 +7,7 @@
             </quill-editor>
             <div class="editor-menu">
                 <div style="width: 30%;">
-                    <div>
+                    <div style="padding-bottom: 10px;">
                         <button mat-raised-button class="down-button" color="primary" (click)="downloadFile()">Download
                             <mat-icon>thumb_down</mat-icon>
                         </button>
@@ -17,10 +17,18 @@
 
                     </div>
                     <div>
-                        <input (change)="changeFilename($event)" #filenameInput type="text" id="filenameInput">
+                        <label for="filenameInput" style="padding-bottom: 10px">Filename</label> <br>
+
+                        <input style="padding-top: 5px; width: 100%;" (change)="changeFilename($event)" #filenameInput
+                            type="text" id="filenameInput">
+                        <label for="filenameFormatInput" style="padding-bottom: 10px">Filename Format</label> <br>
+
+                        <input style="padding-top: 5px; width: 100%;" (change)="changeFilenameFormat($event)"
+                            #filenameFormatInput type="text" id="filenameFormatInput">
+
                     </div>
                 </div>
-                <div style="width: 40%">
+                <div style="width: 40%; padding-left: 16px;">
                     <h2>HOW TO VOCAL</h2>
                     <p>
                         {{wakeWord | uppercase }} : Wake word for vocal command. Only after visually
@@ -30,7 +38,15 @@
                         {{"File" | uppercase }} : After saying file dictate new filename.
                     </p>
                     <p>
+                        {{"Format" | uppercase }} : After saying FORMAT dictate new extension (possible values: text and
+                        html).
+                    </p>
+                    <p>
                         {{"New Line" | uppercase }} : Add new line.
+                    </p>
+
+                    <p>
+                        {{"Bold" | uppercase }} : Make last n words bold.
                     </p>
                 </div>
 
@@ -66,7 +82,7 @@
                     alt="">
             </div>
             <div>
-                <h2>Audio Input</h2>
+                <h2>Audio Input Feed</h2>
                 <p>{{audioInput}}</p>
             </div>
         </div>

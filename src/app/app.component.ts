@@ -92,14 +92,29 @@ export class AppComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.setUpVoiceControls()
     this.setUpCameraFeed()
+    this.setUpVoiceControls()
     this.setFilename(this.current_filename)
+    this.setFilenameFormat(this.getExtension())
   }
 
   setFilename(filename: string): void {
     const filenameInput: HTMLInputElement = document.querySelector('#filenameInput') as HTMLInputElement;
     filenameInput.value = filename
+  }
+
+  setFilenameFormat(filenameFormat: string): void {
+    const filenameFormatInput: HTMLInputElement = document.querySelector('#filenameFormatInput') as HTMLInputElement;
+    filenameFormatInput.value = filenameFormat
+  }
+
+  changeFilenameFormat(event: any) {
+    let format = event.target.value
+    if (format === "txt") {
+      this.current_extension = "text/plain"
+    } else if (format === "html") {
+      this.current_extension = "text/html"
+    }
   }
 
   changeFilename(event: any) {
@@ -224,12 +239,27 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
-  downloadFile() {
-    var blob = new Blob([this.currentText], { type: this.current_extension });
-    FileSaver.saveAs(blob, this.current_filename + "." + this.current_extension.split("/")[1]);
+  downloadFile(): void {
+    let text = ""
+    if (this.current_extension === "text/plain") {
+      text = this.editor?.elementRef.nativeElement.outerText
+    } else if (this.current_extension === "text/html") {
+      text = this.currentText
+    }
+    var blob = new Blob([text], { type: this.current_extension });
+    FileSaver.saveAs(blob, this.current_filename + "." + this.getExtension());
   }
 
-  uploadFile() {
+  getExtension(): string {
+    if (this.current_extension == "text/plain") {
+      return "txt"
+    } else if (this.current_extension === "text/html") {
+      return "html"
+    }
+    return ""
+  }
+
+  uploadFile(): void {
     const inputNode: any = document.querySelector('#file');
 
     if (typeof (FileReader) !== 'undefined') {
