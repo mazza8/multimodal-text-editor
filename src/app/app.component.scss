@@ -42,7 +42,9 @@
                 .sign-label {
                     position: fixed;
                     text-transform: uppercase;
-                    transform: translate(20%, -1000%);
+                    transform: translate(20%, -900%);
+                    font-size: 18px;
+                    font-weight: bold;
                     color: greenyellow
                 }
             }

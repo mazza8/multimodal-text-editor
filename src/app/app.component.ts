@@ -44,6 +44,7 @@ export class AppComponent implements AfterViewInit {
   current_filename: string = "hello world";
   current_extension: string = "text/html"
   wakeWord: string = "google"
+  lastGesture: string = ""
 
   public get gesture() {
     return this._gesture;
@@ -226,21 +227,31 @@ export class AppComponent implements AfterViewInit {
   }
 
   editorContentChanged(obj: any) {
-    console.log(obj.html)
     localStorage.setItem('html', obj.html);
+    console.log(obj.html)
+
   }
 
   private handsControls(event: string): void {
+    if (this.gesture == this.lastGesture) {
+      return
+    }
     if (event === "thumb up") {
       this.triggered = true
     } else if (this.triggered && event === "stop sign") {
       this.triggered = false
     } else if (this.triggered && event === "pointing finger") {
       this.currentText = this.currentText + "<p><br></p>"
-      this.editor?.quillEditor.setSelection(this.editor.quillEditor.getLength(), 0)
     } else if (this.triggered && event === "thumb down") {
       this.downloadFile()
+    } else if (this.triggered && event === "closed fist") {
+      if (this.currentText.length != 0) {
+        let firstPart = this.currentText.split("<p>").slice(0, -1).join("<p>")
+        let header1 = "<h1>" + this.currentText?.split("<p>")?.at(-1)?.split("</p>").at(0) + "</h1>"
+        this.currentText = firstPart + "<p>" + header1 + "</p>"
+      }
     }
+    this.lastGesture = this.gesture
   }
 
   downloadFile(): void {
