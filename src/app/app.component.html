@@ -1,12 +1,12 @@
 <div class="page-container">
     <h1>Multimodal Text Editor</h1>
     <div class="container">
-        <div class="editor-container">
+        <div class="editor-container" style="padding-right: 16px;">
             <quill-editor class="quill-editor" [(ngModel)]="currentText" (onEditorCreated)="loadCachedEditor($event)"
                 (onContentChanged)="editorContentChanged($event)">
             </quill-editor>
             <div class="editor-menu">
-                <div style="width: 30%;">
+                <div style="width: 30%; margin-top: 8px">
                     <div style="padding-bottom: 10px;">
                         <button mat-raised-button class="down-button" color="primary" (click)="downloadFile()">Download
                             <mat-icon>thumb_down</mat-icon>
@@ -17,41 +17,44 @@
 
                     </div>
                     <div>
-                        <label for="filenameInput" style="padding-bottom: 10px">Filename</label> <br>
-
-                        <input style="padding-top: 5px; width: 100%;" (change)="changeFilename($event)" #filenameInput
-                            type="text" id="filenameInput">
-                        <label for="filenameFormatInput" style="padding-bottom: 10px">Filename Format</label> <br>
-
-                        <input style="padding-top: 5px; width: 100%;" (change)="changeFilenameFormat($event)"
-                            #filenameFormatInput type="text" id="filenameFormatInput">
+                        <div>
+                            <p style="margin-top: 8px; margin-bottom: 8px"><b>Filename</b></p>
+                            <input style="width: 90%;" (change)="changeFilename($event)" #filenameInput type="text"
+                                id="filenameInput">
+                        </div>
+                        <div>
+                            <p style="margin-top: 8px; margin-bottom: 8px"><b>Filename Extension</b></p>
+                            <input style="width: 90%;" (change)="changeFilenameFormat($event)" #filenameFormatInput
+                                type="text" id="filenameFormatInput">
+                        </div>
 
                     </div>
                 </div>
-                <div style="width: 40%; padding-left: 16px;">
-                    <h2>HOW TO VOCAL</h2>
+                <div style="width: 40%; padding-left: 16px; padding-right: 16px; margin-top: 8px;">
+                    <h2 style="margin-top: 0px">HOW TO VOCAL</h2>
                     <p>
                         {{wakeWord | uppercase }} : Wake word for vocal command. Only after visually
                         started.
                     </p>
                     <p>
-                        {{"File" | uppercase }} : After saying file dictate new filename.
+                        {{"SPOTIFY" | uppercase }} : After saying SPOTIFY dictate new filename.
                     </p>
                     <p>
-                        {{"Format" | uppercase }} : After saying FORMAT dictate new extension (possible values: text and
+                        {{"FACEBOOK" | uppercase }} : After saying FACEBOOK dictate new extension (possible values: text
+                        and
                         html).
                     </p>
                     <p>
-                        {{"New Line" | uppercase }} : Add new line.
+                        {{"AMAZON" | uppercase }} : Add new line.
                     </p>
 
                     <p>
-                        {{"Bold" | uppercase }} : Make last n words bold.
+                        {{"APPLE" | uppercase }} : Download editor content.
                     </p>
                 </div>
 
-                <div style="width: 30%">
-                    <h2>HOW TO VISUAL</h2>
+                <div style="width: 30%; margin-top: 8px">
+                    <h2 style="margin-top: 0px">HOW TO VISUAL</h2>
                     <p>
                         <mat-icon>thumb_up</mat-icon> Start audio and video input
                     </p>
@@ -71,15 +74,13 @@
             </div>
         </div>
         <div class="side-menu">
-            <div class="video-container">
+            <div class="video-container" style="padding-bottom: 16px;">
                 <video id="videoFeed" width="0" height="0"></video>
                 <canvas class="output_canvas video-feed"></canvas>
                 <p class="sign-label">{{gesture}}</p>
             </div>
             <div class="visual-feed">
-                <img class="visual-content"
-                    [src]="triggered ? ( audio_command ? 'assets/ezgif-3-neg.gif' : 'assets/ezgif-4-860c960ac5.gif' ): 'assets/image.jpg'"
-                    alt="">
+                <img class="visual-content" [src]="getVisualHalFeedback()" alt="">
             </div>
             <div>
                 <h2>Audio Input Feed</h2>

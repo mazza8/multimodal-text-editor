@@ -39,12 +39,15 @@ export class AppComponent implements AfterViewInit {
   currentText: string = "";
   temporarySpeechResult: any;
   triggered: boolean = false;
-  audio_command: boolean = false
+  audioCommand: boolean = false
   audioInput: string = ""
   current_filename: string = "hello world";
   current_extension: string = "text/html"
   wakeWord: string = "google"
   lastGesture: string = ""
+  changeFilenameFlag: boolean = false;
+  changeFileExtensionFlag: boolean = false;
+
 
   public get gesture() {
     return this._gesture;
@@ -146,8 +149,35 @@ export class AppComponent implements AfterViewInit {
     this.camera.start();
   }
 
+  private voiceControlsMapping(currentVoiceControl: string): void {
+    if (currentVoiceControl.includes("microsoft")) {
+      this.downloadFile()
+    } else if (currentVoiceControl.includes("amazon")) {
+      this.addNewLine()
+    } else if (currentVoiceControl.includes("spotify")) {
+      this.changeFilenameFlag = true
+    } else if (currentVoiceControl.includes("facebook")) {
+      this.changeFileExtensionFlag = true
+    }
+  }
+
+  getVisualHalFeedback(): string {
+    if (this.triggered) {
+      if (this.audioCommand) {
+        if (this.changeFileExtensionFlag || this.changeFilenameFlag) {
+          return 'assets/image4.jpg'
+        } else {
+          return 'assets/ezgif-3-neg.gif'
+        }
+      } else {
+        return 'assets/ezgif-4-860c960ac5.gif'
+      }
+    } else {
+      return 'assets/image.jpg'
+    }
+  }
+
   private setUpVoiceControls() {
-    // Store temporary s2t result.
     this.recognition.addEventListener('result', (e: any) => {
       const transcript = Array.from(e.results)
         .map((result: any) => result[0])
@@ -163,21 +193,38 @@ export class AppComponent implements AfterViewInit {
         this.audioInput = this.audioInput + " " + this.temporarySpeechResult
       }
       if (this.temporarySpeechResult !== undefined && this.triggered) {
-        if (this.temporarySpeechResult === this.wakeWord) {
-          this.audio_command = true
+        const currentVoiceControl = this.temporarySpeechResult.toLowerCase()
+        if (currentVoiceControl.includes(this.wakeWord)) {
+          this.audioCommand = true
           setTimeout(() => {
-            this.audio_command = false
-          }, 2000)
+            this.audioCommand = false
+            this.changeFileExtensionFlag = false
+            this.changeFilenameFlag = false
+          }, 15000)
         }
-        if (this.audio_command) {
-          if (this.temporarySpeechResult == "download") {
-            this.downloadFile()
+        if (this.audioCommand) {
+          if (this.changeFileExtensionFlag) {
+            if (currentVoiceControl.includes("hypertext")) {
+              this.current_extension = "text/html"
+              this.setFilenameFormat(this.getExtension())
+
+              this.changeFileExtensionFlag = false
+            } else if (currentVoiceControl.includes("text")) {
+              this.current_extension = "text/plain"
+              this.setFilenameFormat(this.getExtension())
+              this.changeFileExtensionFlag = false
+            }
+          } else if (this.changeFilenameFlag) {
+            this.current_filename = currentVoiceControl.slice(0, 20).replace(" ", "_")
+            this.changeFilenameFlag = false
           }
+
+          this.voiceControlsMapping(currentVoiceControl)
         } else {
-          this.currentText = this.currentText + " " + this.temporarySpeechResult
+          this.currentText = this.currentText + " " + currentVoiceControl
         }
+        this.temporarySpeechResult = undefined
       }
-      this.temporarySpeechResult = undefined
     });
 
     this.recognition.start();
@@ -228,9 +275,13 @@ export class AppComponent implements AfterViewInit {
 
   editorContentChanged(obj: any) {
     localStorage.setItem('html', obj.html);
-    console.log(obj.html)
-
+    this.currentText = obj.html
   }
+
+  private addNewLine(): void {
+    this.currentText = this.currentText + "<p></p>"
+  }
+
 
   private handsControls(event: string): void {
     if (this.gesture == this.lastGesture) {
@@ -241,7 +292,7 @@ export class AppComponent implements AfterViewInit {
     } else if (this.triggered && event === "stop sign") {
       this.triggered = false
     } else if (this.triggered && event === "pointing finger") {
-      this.currentText = this.currentText + "<p><br></p>"
+      this.addNewLine()
     } else if (this.triggered && event === "thumb down") {
       this.downloadFile()
     } else if (this.triggered && event === "closed fist") {
