@@ -215,13 +215,15 @@ export class AppComponent implements AfterViewInit {
               this.changeFileExtensionFlag = false
             }
           } else if (this.changeFilenameFlag) {
+            const filenameInput: HTMLInputElement = document.querySelector('#filenameInput') as HTMLInputElement;
             this.current_filename = currentVoiceControl.slice(0, 20).replace(" ", "_")
+            filenameInput.value = this.current_filename
             this.changeFilenameFlag = false
           }
 
           this.voiceControlsMapping(currentVoiceControl)
         } else {
-          this.currentText = this.currentText + " " + currentVoiceControl
+          this.currentText = this.currentText + "<p>" + currentVoiceControl + "</p>"
         }
         this.temporarySpeechResult = undefined
       }
@@ -275,11 +277,10 @@ export class AppComponent implements AfterViewInit {
 
   editorContentChanged(obj: any) {
     localStorage.setItem('html', obj.html);
-    this.currentText = obj.html
   }
 
   private addNewLine(): void {
-    this.currentText = this.currentText + "<p></p>"
+    this.currentText = this.currentText + "<p><br></p>"
   }
 
 
@@ -297,13 +298,28 @@ export class AppComponent implements AfterViewInit {
       this.downloadFile()
     } else if (this.triggered && event === "closed fist") {
       if (this.currentText.length != 0) {
-        let firstPart = this.currentText.split("<p>").slice(0, -1).join("<p>")
-        let header1 = "<h1>" + this.currentText?.split("<p>")?.at(-1)?.split("</p>").at(0) + "</h1>"
-        this.currentText = firstPart + "<p>" + header1 + "</p>"
+        let tempResult = this.replaceLast("<p>", "<h1>", this.currentText)
+        tempResult = this.replaceLast("</p>", "</h1>", tempResult)
+        this.currentText = tempResult
       }
     }
     this.lastGesture = this.gesture
+
   }
+
+  replaceLast(find: string, replace: string, fullText: string) {
+    var lastIndex = fullText.lastIndexOf(find);
+
+    if (lastIndex === -1) {
+      return fullText;
+    }
+
+    var beginString = fullText.substring(0, lastIndex);
+    var endString = fullText.substring(lastIndex + find.length);
+
+    return beginString + replace + endString;
+  }
+
 
   downloadFile(): void {
     let text = ""
