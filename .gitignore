@@ -34,7 +34,6 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
-src/assets
 .vscode
 
 # Byte-compiled / optimized / DLL files
